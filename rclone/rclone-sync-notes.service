@@ -1,0 +1,9 @@
+[Unit]
+Description=Sync Obsidian notes to remote with rclone
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/evan/.local/bin/rclone_sync_notes
+

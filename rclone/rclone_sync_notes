@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+LOCAL="/home/evan/storage/Notes"
+REMOTE="Obsidian:Obsidian"
+
+# --- SAFETY CHECKS ---
+
+# 1) Local folder must exist
+if [ ! -d "$LOCAL" ]; then
+  echo "ERROR: Local folder '$LOCAL' does not exist. Aborting."
+  exit 1
+fi
+
+# 2) Local folder must NOT be empty
+if [ -z "$(ls -A "$LOCAL")" ]; then
+  echo "ERROR: Local folder '$LOCAL' is empty. Aborting."
+  exit 1
+fi
+
+# 3) Remote must be reachable
+if ! rclone ls "$REMOTE" > /dev/null 2>&1; then
+  echo "ERROR: Remote '$REMOTE' unreachable. Aborting."
+  exit 1
+fi
+
+# --- SYNC WITH BACKUPS ---
+
+# Anything deleted/overwritten on the remote gets moved into .deleted/<timestamp>
+BACKUP_DIR="${REMOTE}/.deleted/$(date +%Y-%m-%d_%H-%M-%S)"
+
+echo "Syncing $LOCAL -> $REMOTE ..."
+rclone sync "$LOCAL" "$REMOTE" \
+  --backup-dir="$BACKUP_DIR" \
+  --verbose
+
+echo "Sync completed safely."
+
